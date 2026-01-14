@@ -416,14 +416,18 @@ def process_playlists(urls, keywords, blacklist=None, whitelist=None, skip_valid
             valid_channels.append(item)
     else:
         print("Validating channels with FFmpeg (this still takes some time)...")
-        
+
         from tqdm import tqdm
         with concurrent.futures.ThreadPoolExecutor(max_workers=os.cpu_count() * 2) as executor:
             futures = {executor.submit(check_stream, item): item for item in deduped_channels}
-            for future in tqdm(concurrent.futures.as_completed(futures), total=len(futures), unit="stream"):
-                result = future.result()
-                if result:
-                    valid_channels.append(result)
+            for future in tqdm(concurrent.futures.as_completed(futures, timeout=30), total=len(futures), unit="stream"):
+                try:
+                    result = future.result(timeout=30)
+                    if result:
+                        valid_channels.append(result)
+                except (concurrent.futures.TimeoutError, Exception) as e:
+                    # Skip streams that timeout or error
+                    pass
     
     print(f"Valid channels: {len(valid_channels)}")
 
