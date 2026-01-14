@@ -420,7 +420,7 @@ def process_playlists(urls, keywords, blacklist=None, whitelist=None, skip_valid
         from tqdm import tqdm
         with concurrent.futures.ThreadPoolExecutor(max_workers=os.cpu_count() * 2) as executor:
             futures = {executor.submit(check_stream, item): item for item in deduped_channels}
-            for future in tqdm(concurrent.futures.as_completed(futures, timeout=30), total=len(futures), unit="stream"):
+            for future in tqdm(concurrent.futures.as_completed(futures), total=len(futures), unit="stream"):
                 try:
                     result = future.result(timeout=30)
                     if result:
